@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'http://localhost:5000',
+  baseURL: 'https://chatterbox-backend-4v4p.onrender.com',
 });
 
 api.interceptors.request.use((config) => {

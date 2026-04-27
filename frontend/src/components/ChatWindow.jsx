@@ -82,7 +82,22 @@ export default function ChatWindow({ room, onBack }) {
   };
 
   const handleSend = useCallback(({ text, imageUrl }) => {
-    if (!socket || !room) return;
+    if (!socket || !room) {
+      console.error('❌ Cannot send message:', { 
+        hasSocket: !!socket, 
+        hasRoom: !!room,
+        socketConnected: socket?.connected 
+      });
+      return;
+    }
+    
+    console.log('📤 Sending message:', { 
+      roomId: room._id, 
+      text: text?.substring(0, 20), 
+      hasImage: !!imageUrl,
+      socketConnected: socket.connected 
+    });
+    
     socket.emit('send-message', {
       roomId: room._id,
       senderId: user._id,
@@ -116,6 +131,7 @@ export default function ChatWindow({ room, onBack }) {
 
   const otherUser = getOtherUser();
   const isOtherOnline = otherUser && onlineUsers.includes(otherUser._id || otherUser);
+  const isSocketConnected = socket?.connected;
 
   // Group consecutive messages from same sender
   const grouped = messages.reduce((acc, msg) => {
@@ -162,6 +178,20 @@ export default function ChatWindow({ room, onBack }) {
                 : isOtherOnline ? '🟢 Online' : '⚫ Offline'}
           </p>
         </div>
+
+        {/* Connection Status Indicator */}
+        {!isSocketConnected && (
+          <div style={{ 
+            padding: '4px 10px', 
+            background: '#ef4444', 
+            borderRadius: '6px', 
+            fontSize: '11px', 
+            fontWeight: '600',
+            color: '#fff'
+          }}>
+            Disconnected
+          </div>
+        )}
 
         {room.isGroupChat && (
           <span style={{ display: 'flex', alignItems: 'center', gap: '4px', color: 'var(--text-muted)', fontSize: '13px' }}>

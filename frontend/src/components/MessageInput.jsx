@@ -36,6 +36,13 @@ export default function MessageInput({ room, onSend }) {
     const trimmed = text.trim();
     if (!trimmed && !imageFile) return;
 
+    // Check socket connection
+    if (!socket || !socket.connected) {
+      toast.error('Not connected. Please refresh the page.');
+      console.error('❌ Socket not connected:', { hasSocket: !!socket, connected: socket?.connected });
+      return;
+    }
+
     // Stop typing
     clearTimeout(typingTimerRef.current);
     isTypingRef.current = false;
@@ -49,6 +56,7 @@ export default function MessageInput({ room, onSend }) {
         const { data } = await api.post('/api/upload', formData, {
           headers: { 'Content-Type': 'multipart/form-data' },
         });
+        console.log('📤 Sending message with image');
         onSend({ text: trimmed, imageUrl: data.imageUrl });
       } catch (err) {
         toast.error(err?.response?.data?.message || 'Image upload failed');
@@ -59,6 +67,7 @@ export default function MessageInput({ room, onSend }) {
       setImageFile(null);
       setPreview('');
     } else {
+      console.log('📤 Sending text message:', trimmed.substring(0, 20));
       onSend({ text: trimmed });
     }
     setText('');

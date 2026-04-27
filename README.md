@@ -6,7 +6,7 @@
 
 **A modern, secure, and feature-rich real-time chat application built with MERN stack**
 
-[![Live Demo](https://img.shields.io/badge/Live%20Demo-Visit%20Now-22C55E?style=for-the-badge)](https://chatterbox-frontend-svqb.onrender.com)
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-Visit%20Now-22C55E?style=for-the-badge)](https://chatterbox-frontend-svgb.onrender.com)
 [![Backend API](https://img.shields.io/badge/Backend%20API-Active-16A34A?style=for-the-badge)](https://chatterbox-backend-4v4p.onrender.com)
 
 </div>
@@ -58,7 +58,7 @@
 
 ## 🚀 Live Demo
 
-**Frontend:** [https://chatterbox-frontend-svqb.onrender.com](https://chatterbox-frontend-svqb.onrender.com)
+**Frontend:** [https://chatterbox-frontend-svgb.onrender.com](https://chatterbox-frontend-svgb.onrender.com)
 
 **Backend API:** [https://chatterbox-backend-4v4p.onrender.com](https://chatterbox-backend-4v4p.onrender.com)
 

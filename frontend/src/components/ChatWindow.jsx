@@ -133,10 +133,12 @@ export default function ChatWindow({ room, onBack }) {
     <div className="chat-window">
       {/* Topbar */}
       <div className="chat-topbar">
-        <button className="icon-btn" style={{ display: 'none' }} id="back-btn" onClick={onBack}>
-          <FiArrowLeft />
-        </button>
-        <button className="icon-btn" style={{ marginRight: '4px' }} onClick={onBack} title="Back">
+        <button 
+          className="icon-btn" 
+          onClick={onBack} 
+          title="Back"
+          style={{ marginRight: '4px' }}
+        >
           <FiArrowLeft />
         </button>
 

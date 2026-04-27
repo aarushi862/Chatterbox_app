@@ -236,8 +236,42 @@ export default function ChatWindow({ room, onBack }) {
           <div className="chat-empty">
             <div className="chat-empty-icon">👋</div>
             <p className="chat-empty-text">No messages yet. Say hello!</p>
+            <div style={{ 
+              marginTop: '12px',
+              padding: '8px 16px',
+              background: 'rgba(255, 213, 79, 0.1)',
+              border: '1px solid rgba(255, 213, 79, 0.3)',
+              borderRadius: '8px',
+              fontSize: '12px',
+              color: '#ffd54f',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px'
+            }}>
+              🔒 Messages are end-to-end encrypted
+            </div>
           </div>
         )}
+
+        {!loading && messages.length > 0 && (
+          <>
+            {/* Encryption Banner - Show once at top */}
+            <div style={{ 
+              textAlign: 'center',
+              padding: '8px 16px',
+              margin: '0 auto 16px',
+              background: 'rgba(255, 213, 79, 0.08)',
+              border: '1px solid rgba(255, 213, 79, 0.2)',
+              borderRadius: '8px',
+              fontSize: '12px',
+              color: '#ffd54f',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              maxWidth: 'fit-content'
+            }}>
+              🔒 Messages are end-to-end encrypted. No one outside this chat can read them.
+            </div>
 
         {grouped.map((group, gi) => {
           const senderId = group[0].sender?._id || group[0].sender;
@@ -266,18 +300,6 @@ export default function ChatWindow({ room, onBack }) {
                     ) : (
                       msg.text
                     )}
-                    {msg.encrypted && (
-                      <div style={{ 
-                        fontSize: '9px', 
-                        color: 'rgba(255,255,255,0.3)', 
-                        marginTop: '4px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '3px'
-                      }}>
-                        🔒 End-to-end encrypted
-                      </div>
-                    )}
                     {isLastInGroup && (
                       <div className="msg-time">
                         {formatTime(msg.createdAt)}
@@ -303,6 +325,8 @@ export default function ChatWindow({ room, onBack }) {
             </div>
           );
         })}
+            </>
+          )}
 
         {typingUser && <TypingIndicator name={typingUser} />}
         <div ref={bottomRef} />

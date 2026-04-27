@@ -308,7 +308,13 @@ export default function ChatWindow({ room, onBack }) {
                     key={msg._id || mi} 
                     onMouseEnter={() => setHoveredMessage(msg._id)}
                     onMouseLeave={() => setHoveredMessage(null)}
-                    style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: '6px', flexDirection: isOwn ? 'row-reverse' : 'row' }}
+                    style={{ 
+                      position: 'relative', 
+                      display: 'inline-flex', 
+                      alignItems: 'center', 
+                      gap: '6px',
+                      maxWidth: '100%'
+                    }}
                   >
                     <div className="msg-bubble">
                       {msg.imageUrl ? (
@@ -345,23 +351,31 @@ export default function ChatWindow({ room, onBack }) {
                       <button
                         onClick={() => handleDeleteMessage(msg._id)}
                         style={{
-                          width: '28px',
-                          height: '28px',
+                          width: '24px',
+                          height: '24px',
                           borderRadius: '50%',
-                          background: '#ef4444',
-                          color: '#fff',
+                          background: 'rgba(255,255,255,0.1)',
+                          color: 'var(--text-muted)',
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
-                          fontSize: '13px',
+                          fontSize: '16px',
                           cursor: 'pointer',
                           border: 'none',
-                          opacity: 0.9,
-                          transition: 'opacity 0.2s'
+                          transition: 'all 0.2s',
+                          flexShrink: 0
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.background = 'rgba(239, 68, 68, 0.2)';
+                          e.currentTarget.style.color = '#ef4444';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.background = 'rgba(255,255,255,0.1)';
+                          e.currentTarget.style.color = 'var(--text-muted)';
                         }}
                         title="Delete message"
                       >
-                        <FiTrash2 size={13} />
+                        <FiMoreVertical size={14} />
                       </button>
                     )}
                   </div>

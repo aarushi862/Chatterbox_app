@@ -4,7 +4,7 @@ import { useSocket } from '../context/SocketContext';
 import api from '../api/axios';
 import MessageInput from './MessageInput';
 import TypingIndicator from './TypingIndicator';
-import { FiArrowLeft, FiUsers, FiTrash2, FiMoreVertical } from 'react-icons/fi';
+import { FiArrowLeft, FiUsers } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 
 function getInitials(name) {
@@ -22,7 +22,6 @@ export default function ChatWindow({ room, onBack }) {
   const [messages, setMessages] = useState([]);
   const [typingUser, setTypingUser] = useState('');
   const [loading, setLoading] = useState(false);
-  const [hoveredMessage, setHoveredMessage] = useState(null);
   const bottomRef = useRef(null);
   const currentRoomRef = useRef(null);
 
@@ -60,17 +59,11 @@ export default function ChatWindow({ room, onBack }) {
       ));
     };
     
-    const onMessageDeleted = ({ messageId }) => {
-      setMessages(prev => prev.filter(msg => msg._id !== messageId));
-      toast.success('Message deleted');
-    };
-    
     const onTyping = (name) => setTypingUser(name);
     const onStopTyping = () => setTypingUser('');
 
     socket.on('receive-message', onReceive);
     socket.on('message-read', onMessageRead);
-    socket.on('message-deleted', onMessageDeleted);
     socket.on('user-typing', onTyping);
     socket.on('stop-typing', onStopTyping);
     socket.on('message-error', ({ message }) => toast.error(message));
@@ -78,7 +71,6 @@ export default function ChatWindow({ room, onBack }) {
     return () => {
       socket.off('receive-message', onReceive);
       socket.off('message-read', onMessageRead);
-      socket.off('message-deleted', onMessageDeleted);
       socket.off('user-typing', onTyping);
       socket.off('stop-typing', onStopTyping);
       socket.off('message-error');
@@ -136,13 +128,6 @@ export default function ChatWindow({ room, onBack }) {
       imageUrl: imageUrl || '',
     });
   }, [socket, room, user]);
-
-  const handleDeleteMessage = (messageId) => {
-    if (!socket) return;
-    if (window.confirm('Delete this message?')) {
-      socket.emit('delete-message', { messageId, userId: user._id });
-    }
-  };
 
   if (!room) {
     return (
@@ -304,79 +289,35 @@ export default function ChatWindow({ room, onBack }) {
                 const isDelivered = true; // Assume delivered if we received it
                 
                 return (
-                  <div 
-                    key={msg._id || mi} 
-                    onMouseEnter={() => setHoveredMessage(msg._id)}
-                    onMouseLeave={() => setHoveredMessage(null)}
-                    style={{ 
-                      position: 'relative', 
-                      display: 'inline-flex', 
-                      alignItems: 'center', 
-                      gap: '6px',
-                      maxWidth: '100%'
-                    }}
-                  >
-                    <div className="msg-bubble">
-                      {msg.imageUrl ? (
-                        <img
-                          src={msg.imageUrl}
-                          alt="shared"
-                          className="msg-img"
-                          onClick={() => window.open(msg.imageUrl, '_blank')}
-                        />
-                      ) : (
-                        msg.text
-                      )}
-                      {isLastInGroup && (
-                        <div className="msg-time">
-                          {formatTime(msg.createdAt)}
-                          {isOwn && (
-                            <span style={{ marginLeft: '4px' }}>
-                              {isRead ? (
-                                // Blue double tick (read)
-                                <span style={{ color: '#53bdeb' }}>✓✓</span>
-                              ) : isDelivered ? (
-                                // Gray double tick (delivered)
-                                <span style={{ color: 'rgba(255,255,255,0.4)' }}>✓✓</span>
-                              ) : (
-                                // Single tick (sent)
-                                <span style={{ color: 'rgba(255,255,255,0.4)' }}>✓</span>
-                              )}
-                            </span>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                    {isOwn && hoveredMessage === msg._id && (
-                      <button
-                        onClick={() => handleDeleteMessage(msg._id)}
-                        style={{
-                          width: '24px',
-                          height: '24px',
-                          borderRadius: '50%',
-                          background: 'rgba(255,255,255,0.1)',
-                          color: 'var(--text-muted)',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          fontSize: '16px',
-                          cursor: 'pointer',
-                          border: 'none',
-                          transition: 'all 0.2s',
-                          flexShrink: 0
-                        }}
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.background = 'rgba(239, 68, 68, 0.2)';
-                          e.currentTarget.style.color = '#ef4444';
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.background = 'rgba(255,255,255,0.1)';
-                          e.currentTarget.style.color = 'var(--text-muted)';
-                        }}
-                        title="Delete message"
-                      >
-                        <FiMoreVertical size={14} />
-                      </button>
+                  <div key={msg._id || mi} className="msg-bubble">
+                    {msg.imageUrl ? (
+                      <img
+                        src={msg.imageUrl}
+                        alt="shared"
+                        className="msg-img"
+                        onClick={() => window.open(msg.imageUrl, '_blank')}
+                      />
+                    ) : (
+                      msg.text
+                    )}
+                    {isLastInGroup && (
+                      <div className="msg-time">
+                        {formatTime(msg.createdAt)}
+                        {isOwn && (
+                          <span style={{ marginLeft: '4px' }}>
+                            {isRead ? (
+                              // Blue double tick (read)
+                              <span style={{ color: '#53bdeb' }}>✓✓</span>
+                            ) : isDelivered ? (
+                              // Gray double tick (delivered)
+                              <span style={{ color: 'rgba(255,255,255,0.4)' }}>✓✓</span>
+                            ) : (
+                              // Single tick (sent)
+                              <span style={{ color: 'rgba(255,255,255,0.4)' }}>✓</span>
+                            )}
+                          </span>
+                        )}
+                      </div>
                     )}
                   </div>
                 );

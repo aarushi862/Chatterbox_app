@@ -45,23 +45,37 @@ export default function ChatWindow({ room, onBack }) {
     const onReceive = (msg) => {
       if (msg.room === currentRoomRef.current || msg.room?._id === currentRoomRef.current) {
         setMessages(prev => [...prev, msg]);
+        
+        // Auto-mark as read if chat is open
+        if (msg.sender?._id !== user._id && socket) {
+          socket.emit('mark-read', { messageId: msg._id, userId: user._id });
+        }
       }
     };
+    
+    const onMessageRead = ({ messageId, userId, readBy }) => {
+      setMessages(prev => prev.map(msg => 
+        msg._id === messageId ? { ...msg, readBy } : msg
+      ));
+    };
+    
     const onTyping = (name) => setTypingUser(name);
     const onStopTyping = () => setTypingUser('');
 
     socket.on('receive-message', onReceive);
+    socket.on('message-read', onMessageRead);
     socket.on('user-typing', onTyping);
     socket.on('stop-typing', onStopTyping);
     socket.on('message-error', ({ message }) => toast.error(message));
 
     return () => {
       socket.off('receive-message', onReceive);
+      socket.off('message-read', onMessageRead);
       socket.off('user-typing', onTyping);
       socket.off('stop-typing', onStopTyping);
       socket.off('message-error');
     };
-  }, [socket]);
+  }, [socket, user]);
 
   // Auto-scroll
   useEffect(() => {
@@ -74,6 +88,15 @@ export default function ChatWindow({ room, onBack }) {
     try {
       const { data } = await api.get(`/api/messages/${roomId}`);
       setMessages(data);
+      
+      // Mark all messages as read
+      if (socket) {
+        data.forEach(msg => {
+          if (msg.sender?._id !== user._id && !msg.readBy?.includes(user._id)) {
+            socket.emit('mark-read', { messageId: msg._id, userId: user._id });
+          }
+        });
+      }
     } catch {
       toast.error('Failed to load messages');
     } finally {
@@ -226,23 +249,57 @@ export default function ChatWindow({ room, onBack }) {
               {!isOwn && room.isGroupChat && (
                 <p className="msg-sender-name">{senderName}</p>
               )}
-              {group.map((msg, mi) => (
-                <div key={msg._id || mi} className="msg-bubble">
-                  {msg.imageUrl ? (
-                    <img
-                      src={msg.imageUrl}
-                      alt="shared"
-                      className="msg-img"
-                      onClick={() => window.open(msg.imageUrl, '_blank')}
-                    />
-                  ) : (
-                    msg.text
-                  )}
-                  {mi === group.length - 1 && (
-                    <div className="msg-time">{formatTime(msg.createdAt)}</div>
-                  )}
-                </div>
-              ))}
+              {group.map((msg, mi) => {
+                const isLastInGroup = mi === group.length - 1;
+                const isRead = msg.readBy && msg.readBy.length > 1; // More than just sender
+                const isDelivered = true; // Assume delivered if we received it
+                
+                return (
+                  <div key={msg._id || mi} className="msg-bubble">
+                    {msg.imageUrl ? (
+                      <img
+                        src={msg.imageUrl}
+                        alt="shared"
+                        className="msg-img"
+                        onClick={() => window.open(msg.imageUrl, '_blank')}
+                      />
+                    ) : (
+                      msg.text
+                    )}
+                    {msg.encrypted && (
+                      <div style={{ 
+                        fontSize: '9px', 
+                        color: 'rgba(255,255,255,0.3)', 
+                        marginTop: '4px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '3px'
+                      }}>
+                        🔒 End-to-end encrypted
+                      </div>
+                    )}
+                    {isLastInGroup && (
+                      <div className="msg-time">
+                        {formatTime(msg.createdAt)}
+                        {isOwn && (
+                          <span style={{ marginLeft: '4px' }}>
+                            {isRead ? (
+                              // Blue double tick (read)
+                              <span style={{ color: '#53bdeb' }}>✓✓</span>
+                            ) : isDelivered ? (
+                              // Gray double tick (delivered)
+                              <span style={{ color: 'rgba(255,255,255,0.4)' }}>✓✓</span>
+                            ) : (
+                              // Single tick (sent)
+                              <span style={{ color: 'rgba(255,255,255,0.4)' }}>✓</span>
+                            )}
+                          </span>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           );
         })}

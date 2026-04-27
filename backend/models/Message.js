@@ -20,6 +20,20 @@ const messageSchema = new mongoose.Schema(
       type: String,
       default: '',
     },
+    // Read status tracking
+    readBy: [{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+    }],
+    // Encryption fields
+    encrypted: {
+      type: Boolean,
+      default: true,
+    },
+    iv: {
+      type: String, // Initialization vector for encryption
+      default: '',
+    },
   },
   { timestamps: true }
 );

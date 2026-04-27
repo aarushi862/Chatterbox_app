@@ -15,41 +15,19 @@ connectDB();
 const app = express();
 const httpServer = http.createServer(app);
 
-// Socket.io setup with CORS
+// Socket.io setup with CORS - Allow all origins
 const io = new Server(httpServer, {
   cors: {
-    origin: [
-      'https://chatterbox-frontend-svqb.onrender.com',
-      'https://chatterbox-frontend-svqh.onrender.com',
-      'http://localhost:5173',
-      process.env.CLIENT_URL
-    ].filter(Boolean),
+    origin: true, // Allow all origins
     methods: ['GET', 'POST'],
     credentials: true,
     allowedHeaders: ['Content-Type', 'Authorization'],
   },
 });
 
-// CORS Configuration
+// CORS Configuration - Allow all origins temporarily for debugging
 const corsOptions = {
-  origin: function (origin, callback) {
-    const allowedOrigins = [
-      'https://chatterbox-frontend-svqb.onrender.com',
-      'https://chatterbox-frontend-svqh.onrender.com',
-      'http://localhost:5173',
-      process.env.CLIENT_URL
-    ].filter(Boolean);
-    
-    // Allow requests with no origin (like mobile apps or curl requests)
-    if (!origin) return callback(null, true);
-    
-    if (allowedOrigins.indexOf(origin) !== -1) {
-      callback(null, true);
-    } else {
-      console.log('❌ CORS blocked origin:', origin);
-      callback(null, true); // Temporarily allow all for debugging
-    }
-  },
+  origin: true, // Allow all origins
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],

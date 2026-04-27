@@ -3,7 +3,8 @@ import { useSocket } from '../context/SocketContext';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/axios';
 import toast from 'react-hot-toast';
-import { FiSend, FiImage, FiX } from 'react-icons/fi';
+import { FiSend, FiImage, FiX, FiSmile } from 'react-icons/fi';
+import EmojiPicker from 'emoji-picker-react';
 
 export default function MessageInput({ room, onSend }) {
   const { socket } = useSocket();
@@ -12,12 +13,25 @@ export default function MessageInput({ room, onSend }) {
   const [imageFile, setImageFile] = useState(null);
   const [preview, setPreview] = useState('');
   const [uploading, setUploading] = useState(false);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const typingTimerRef = useRef(null);
   const isTypingRef = useRef(false);
   const fileRef = useRef(null);
+  const emojiPickerRef = useRef(null);
 
   // Cleanup preview URL on unmount
   useEffect(() => () => { if (preview) URL.revokeObjectURL(preview); }, [preview]);
+
+  // Close emoji picker when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (emojiPickerRef.current && !emojiPickerRef.current.contains(event.target)) {
+        setShowEmojiPicker(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const emitTyping = useCallback(() => {
     if (!socket || !room) return;
@@ -101,6 +115,11 @@ export default function MessageInput({ room, onSend }) {
     if (preview) { URL.revokeObjectURL(preview); setPreview(''); }
   };
 
+  const onEmojiClick = (emojiData) => {
+    setText(prev => prev + emojiData.emoji);
+    setShowEmojiPicker(false);
+  };
+
   return (
     <div className="msg-input-area">
       {preview && (
@@ -110,6 +129,19 @@ export default function MessageInput({ room, onSend }) {
           <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{imageFile?.name}</span>
         </div>
       )}
+      
+      {/* Emoji Picker */}
+      {showEmojiPicker && (
+        <div ref={emojiPickerRef} style={{ position: 'absolute', bottom: '70px', right: '24px', zIndex: 1000 }}>
+          <EmojiPicker 
+            onEmojiClick={onEmojiClick}
+            theme="dark"
+            width={320}
+            height={400}
+          />
+        </div>
+      )}
+      
       <div className="msg-input-wrap">
         <input
           type="file"
@@ -118,8 +150,16 @@ export default function MessageInput({ room, onSend }) {
           style={{ display: 'none' }}
           onChange={handleFileChange}
         />
-        <button className="img-btn" title="Share image" onClick={() => fileRef.current?.click()}>
+        <button className="img-btn" title="Share image (Coming soon)" onClick={() => toast.error('Image upload coming soon!')} disabled>
           <FiImage />
+        </button>
+        <button 
+          className="img-btn" 
+          title="Emoji" 
+          onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+          style={{ color: showEmojiPicker ? 'var(--accent)' : 'var(--text-muted)' }}
+        >
+          <FiSmile />
         </button>
         <textarea
           id="message-input"

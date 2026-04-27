@@ -91,6 +91,26 @@ const socketHandler = (io) => {
       }
     });
 
+    // ─── Delete Message ──────────────────────────────────────
+    socket.on('delete-message', async ({ messageId, userId }) => {
+      try {
+        const message = await Message.findById(messageId);
+        if (!message) return;
+        
+        // Only sender can delete their own message
+        if (message.sender.toString() !== userId.toString()) {
+          return socket.emit('message-error', { message: 'You can only delete your own messages' });
+        }
+        
+        await Message.findByIdAndDelete(messageId);
+        
+        // Notify all users in the room
+        io.to(message.room.toString()).emit('message-deleted', { messageId });
+      } catch (error) {
+        console.error('Delete message error:', error.message);
+      }
+    });
+
     // ─── Typing Indicators ───────────────────────────────────
     socket.on('typing', ({ roomId, userName }) => {
       socket.to(roomId).emit('user-typing', userName);

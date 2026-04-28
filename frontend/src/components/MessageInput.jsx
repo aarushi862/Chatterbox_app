@@ -150,7 +150,7 @@ export default function MessageInput({ room, onSend }) {
           style={{ display: 'none' }}
           onChange={handleFileChange}
         />
-        <button className="img-btn" title="Share image (Coming soon)" onClick={() => toast.error('Image upload coming soon!')} disabled>
+        <button className="img-btn" title="Share image" onClick={() => fileRef.current?.click()}>
           <FiImage />
         </button>
         <button 
